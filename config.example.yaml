@@ -1,0 +1,12 @@
+runId: "sample-run"
+agent: "plan"
+model:
+  id: "openai:gpt-4o"
+  contextWindow: 128000
+  outputLimit: 4096
+path: "/absolute/path/to/project"
+outputDir: "./out"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - "List the files in the project root."
+  - "Summarize the repository purpose in one sentence."

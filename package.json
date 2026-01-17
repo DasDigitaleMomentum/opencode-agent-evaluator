@@ -1,0 +1,23 @@
+{
+  "name": "agent-evaluator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "agent-evaluator": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node dist/index.js --help"
+  },
+  "dependencies": {
+    "@opencode-ai/sdk": "^1.1.25",
+    "commander": "12.1.0",
+    "js-yaml": "4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "typescript": "5.4.5"
+  }
+}
