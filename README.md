@@ -23,9 +23,13 @@ npm run build
 
 ## Usage
 
-1. Copy `config.example.yaml` to `config.yaml`
-2. Point it to your running OpenCode server
-3. Run it:
+1. Make sure OpenCode is running. If not, start it with:
+   ```bash
+   opencode serve
+   ```
+2. Copy `config.example.yaml` to `config.yaml`
+3. Point it to your running OpenCode server (default: `http://127.0.0.1:4096`)
+4. Run it:
 
 ```bash
 node dist/index.js -c config.yaml
