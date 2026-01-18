@@ -3,3 +3,7 @@ dist/
 out/
 config.yaml
 *.log
+testbeds/
+__pycache__/
+*.pyc
+.pytest_cache/
