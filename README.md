@@ -14,6 +14,11 @@ A simple CLI tool to benchmark OpenCode AI agent runs. I built this to compare d
 
 I wanted to understand how efficient different sub-agent scenarios are. A setup that burns most tokens on tool calls is usually not great. This tool helps spot that.
 
+## Prerequisites
+
+- Node.js 18+
+- A running OpenCode TUI instance (the evaluator connects to its built-in web server)
+
 ## Setup
 
 ```bash
@@ -23,17 +28,21 @@ npm run build
 
 ## Usage
 
-1. Make sure OpenCode is running. If not, start it with:
+1. **Start OpenCode TUI** in your target project directory:
    ```bash
-   opencode serve
+   cd /path/to/your/project
+   opencode
    ```
-2. Copy `config.example.yaml` to `config.yaml`
-3. Point it to your running OpenCode server (default: `http://127.0.0.1:4096`)
-4. Run it:
+   This starts the TUI with a built-in web server on port 4096.
 
-```bash
-node dist/index.js -c config.yaml
-```
+   > **Important:** Do NOT use `opencode serve` - the evaluator requires the full TUI web server, not the headless API server. The headless server has a different response format that is incompatible with this tool.
+
+2. Create a `config.yaml` (see example below)
+
+3. Run the evaluator:
+   ```bash
+   node dist/index.js -c config.yaml
+   ```
 
 ## Config
 

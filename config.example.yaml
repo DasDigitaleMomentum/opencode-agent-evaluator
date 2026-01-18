@@ -1,3 +1,10 @@
+# OpenCode Agent Evaluator - Example Configuration
+#
+# Copy this file to config.yaml and adjust the values.
+#
+# IMPORTANT: baseUrl must point to an OpenCode TUI web server (port 4096),
+# NOT to "opencode serve" which has an incompatible response format.
+
 runId: "sample-run"
 agent: "plan"
 model:
