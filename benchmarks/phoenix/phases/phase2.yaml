@@ -1,0 +1,25 @@
+# Phoenix Phase 2: Logging Infrastructure Refactoring
+#
+# Acceptance Criteria:
+# - utils/logging_config.py exists with central configuration
+# - All modules use standard Python logging
+# - LegacyLogger removed from all files
+# - All tests still pass
+
+runId: "phoenix-phase2"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"
+outputDir: "./out/phoenix-phase2"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Execute Phase 2 from OPTI_SPEC.md: Logging Infrastructure Refactoring
+    
+    1. Create utils/logging_config.py with central logging configuration
+    2. Replace LegacyLogger with standard Python logging in ALL modules
+    3. Ensure unified log output across Gateway, Core, and Utils layers
+    4. Run tests to verify nothing is broken

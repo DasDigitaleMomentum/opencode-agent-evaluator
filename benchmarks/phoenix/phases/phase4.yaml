@@ -1,0 +1,32 @@
+# Phoenix Phase 4: Input Validation & Error Handling
+#
+# Acceptance Criteria:
+# - utils/validators.py has comprehensive validation functions
+# - utils/exceptions.py contains ValidationError class
+# - gateway/rest_api.py returns HTTP 400 for invalid requests
+# - Validation errors are logged
+# - No internal details exposed to clients
+# - All tests pass
+
+runId: "phoenix-phase4"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"
+outputDir: "./out/phoenix-phase4"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Execute Phase 4 from OPTI_SPEC.md: Input Validation & Error Handling
+    
+    1. Extend utils/validators.py with comprehensive validation:
+       - quantity: must be positive integer
+       - price: must be positive number
+       - currency: must be EUR, USD, or GBP
+       - item_id: must be alphanumeric, 4 characters
+    2. Create utils/exceptions.py with ValidationError exception class
+    3. Update gateway/rest_api.py to validate requests and return HTTP 400 with descriptive messages
+    4. Log all validation errors without exposing internal details to clients
+    5. Run tests to verify everything works correctly

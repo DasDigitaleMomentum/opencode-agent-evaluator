@@ -1,0 +1,27 @@
+# Chimera Phase 3: Extension - Reporting Interface
+#
+# Acceptance Criteria:
+# - core/hooks.py exists with OrderHook base class
+# - AnalyticsHook implementation writes to analytics_events.json
+# - Hook integrated into OrderManager
+# - Extensible design (Open-Closed Principle)
+# - All tests pass
+
+runId: "chimera-phase3"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"
+outputDir: "./out/chimera-phase3"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Execute Phase 3 from OPTI_SPEC.md: Implementation of Reporting Interface
+    
+    1. Create core/hooks.py with OrderHook base class interface
+    2. Implement AnalyticsHook that writes order data (ID, amount, status) to analytics_events.json
+    3. Integrate the hook system into OrderManager - hooks trigger on successful order creation
+    4. Ensure the design follows Open-Closed Principle for future extensibility
+    5. Run tests to verify integration works correctly

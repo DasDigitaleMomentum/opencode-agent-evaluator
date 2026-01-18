@@ -66,6 +66,68 @@ Results go into `out/{runId}/`:
 - `metrics.yaml` - structured token usage per session
 - `log.txt` - full conversation log
 
+## Benchmarks
+
+This repository includes two benchmark projects for evaluating AI coding agents:
+
+### Available Benchmarks
+
+| Project   | Phases | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| **Chimera** | 0-3    | Order processing backend (DE) - Bugfix, Logging, Hooks |
+| **Phoenix** | 0-4    | Order processing backend (EN) - adds Input Validation  |
+
+### Running a Benchmark
+
+```bash
+# 1. Create a testbed from a baseline project
+./scripts/testbed.sh create my-test -b chimera/baseline
+
+# 2. Start OpenCode TUI in the testbed directory
+cd testbeds/my-test && opencode
+
+# 3. Run the full benchmark (in another terminal)
+TESTBED_PATH=$(pwd)/testbeds/my-test node dist/index.js -c benchmarks/chimera/full_benchmark.yaml
+
+# Or run individual phases:
+node dist/index.js -c benchmarks/chimera/phases/phase1.yaml
+```
+
+### Testbed Management
+
+```bash
+./scripts/testbed.sh create <name> [-b baseline]  # Create new testbed
+./scripts/testbed.sh reset <name>                 # Reset to baseline
+./scripts/testbed.sh diff <name>                  # Show changes
+./scripts/testbed.sh snapshot <name> <checkpoint> # Save checkpoint
+./scripts/testbed.sh restore <name> <checkpoint>  # Restore checkpoint
+./scripts/testbed.sh clean <name>                 # Remove testbed
+./scripts/testbed.sh baselines                    # List available baselines
+```
+
+### Benchmark Structure
+
+```
+benchmarks/
+├── chimera/
+│   ├── baseline/           # Project source (OPTI_SPEC.md included)
+│   ├── full_benchmark.yaml # Run all phases
+│   └── phases/
+│       ├── phase0.yaml     # Project exploration
+│       ├── phase1.yaml     # Bugfix
+│       ├── phase2.yaml     # Logging refactoring
+│       └── phase3.yaml     # Hook system
+└── phoenix/
+    ├── baseline/
+    ├── full_benchmark.yaml
+    └── phases/
+        ├── phase0.yaml
+        ├── phase1.yaml
+        ├── phase2.yaml
+        ├── phase3.yaml
+        └── phase4.yaml     # Input validation
+```
+
 ## License
 
 MIT

@@ -1,0 +1,27 @@
+# Phoenix Full Benchmark
+# Runs all phases as defined in OPTI_SPEC.md
+#
+# Usage:
+#   1. Create testbed: ./scripts/testbed.sh create phoenix-full -b phoenix/baseline
+#   2. Run: node dist/index.js -c benchmarks/phoenix/full_benchmark.yaml
+
+runId: "phoenix-full"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"  # Set via environment or replace with absolute path
+outputDir: "./out/phoenix-full"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Read the OPTI_SPEC.md file in this project and execute ALL phases (0-4) in order.
+    
+    For each phase:
+    1. Understand the requirements
+    2. Implement the changes
+    3. Verify the acceptance criteria are met
+    4. Proceed to the next phase
+    
+    Report your progress after each phase completion.

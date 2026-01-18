@@ -1,0 +1,24 @@
+# Chimera Phase 1: Quality Assurance & Bugfix
+#
+# Acceptance Criteria:
+# - pytest tests/test_orders.py exits with code 0
+# - All tests pass
+# - EUR calculations still work correctly
+
+runId: "chimera-phase1"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"
+outputDir: "./out/chimera-phase1"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Execute Phase 1 from OPTI_SPEC.md: Quality Assurance & Bugfix
+    
+    1. Locate the root cause of the failing test in tests/test_orders.py
+    2. Fix the rounding error in international order calculations
+    3. Ensure domestic EUR orders still calculate correctly
+    4. Run the full test suite to validate the fix

@@ -1,0 +1,25 @@
+# Phoenix Phase 0: Project Exploration
+#
+# Acceptance Criteria:
+# - docs/overview.md exists
+# - Contains one line per source file
+# - Contains summary section
+
+runId: "phoenix-phase0"
+agent: "plan"
+model:
+  id: "anthropic:claude-sonnet-4-20250514"
+  contextWindow: 200000
+  outputLimit: 16384
+path: "${TESTBED_PATH}"
+outputDir: "./out/phoenix-phase0"
+baseUrl: "http://127.0.0.1:4096"
+prompts:
+  - |
+    Execute Phase 0 from OPTI_SPEC.md: Project Exploration
+    
+    Create docs/overview.md containing:
+    1. One line per source file with a brief description
+    2. A summary section describing the main project functionality
+    
+    This document will serve as reference for subsequent phases.
