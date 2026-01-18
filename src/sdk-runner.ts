@@ -712,6 +712,11 @@ function renderUsageSummary(
       summary.contextAvailableTokens === null
         ? "n/a"
         : formatTokenValue(summary.contextAvailableTokens);
+
+    const ctxUsed =
+      summary.contextUsedTokens === null
+        ? "n/a"
+        : formatTokenValue(summary.contextUsedTokens);
     
     const line2 = [
       `         cache: ${formatTokenValue(summary.totalCacheReadTokens)}/${formatTokenValue(summary.totalCacheWriteTokens)}`,
@@ -719,10 +724,11 @@ function renderUsageSummary(
       `tasks: ${summary.taskCallCount}`,
       `subs: ${summary.subagentCount}`,
       `tool-tokens: ~${formatTokenValue(toolTokens)}`,
+      `ctx-used: ${ctxUsed}`,
       `ctx-left: ${ctxLeft}`,
     ].join("  ");
 
-    console.log(line1);
+    console.log(line1 + `  total: ${formatTokenValue(summary.totalTokens).padStart(8)}`);
     console.log(line2);
   }
   console.log("─".repeat(80));
