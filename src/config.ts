@@ -30,12 +30,39 @@ export interface CliOverrides {
 export async function loadRunConfig(configPath: string, overrides: CliOverrides): Promise<RunConfig> {
   const absolutePath = path.resolve(configPath)
   const raw = await fs.readFile(absolutePath, "utf-8")
-  const parsed = yaml.load(raw)
+  const expanded = expandEnvVariables(raw)
+  const parsed = yaml.load(expanded)
   if (!parsed || typeof parsed !== "object") {
     throw new Error("Config YAML must contain a mapping object")
   }
   const config = parseRunConfig(parsed as Record<string, unknown>)
   return applyOverrides(config, overrides)
+}
+
+/**
+ * Expands environment variables in a string.
+ * Supports:
+ *   ${VAR}          - replaced with env value, error if not set
+ *   ${VAR:-default} - replaced with env value, or default if not set
+ *   ${VAR:-}        - replaced with env value, or empty string if not set
+ */
+function expandEnvVariables(content: string): string {
+  // Pattern: ${VAR} or ${VAR:-default}
+  const pattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*)(?::-([^}]*))?\}/g
+  
+  return content.replace(pattern, (match, varName: string, defaultValue?: string) => {
+    const value = process.env[varName]
+    
+    if (value !== undefined) {
+      return value
+    }
+    
+    if (defaultValue !== undefined) {
+      return defaultValue
+    }
+    
+    throw new Error(`Environment variable ${varName} is not set and has no default value`)
+  })
 }
 
 function parseRunConfig(raw: Record<string, unknown>): RunConfig {
