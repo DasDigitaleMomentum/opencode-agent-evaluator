@@ -7,12 +7,21 @@ export interface LogPaths {
 }
 
 export async function ensureOutputPaths(outputDir: string, runId: string): Promise<LogPaths> {
-  const resolvedDir = path.resolve(outputDir, runId)
+  const safeRunId = sanitizeForPath(runId)
+  const resolvedDir = path.resolve(outputDir, safeRunId)
   await fs.mkdir(resolvedDir, { recursive: true })
   return {
     logFile: path.join(resolvedDir, "log.txt"),
     metricsFile: path.join(resolvedDir, "metrics.yaml"),
   }
+}
+
+/**
+ * Sanitizes a string for use in file paths.
+ * Replaces characters that are problematic on Windows or in URLs.
+ */
+function sanitizeForPath(value: string): string {
+  return value.replace(/[:<>"|?*]/g, "-")
 }
 
 export async function appendLogEntry(logFile: string, entry: string): Promise<void> {

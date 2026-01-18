@@ -5,15 +5,15 @@
 # - All tests pass
 # - EUR calculations still work correctly
 
-runId: "chimera-phase1"
-agent: "plan"
+runId: "chimera-phase1-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+agent: "${AGENT:-plan}"
 model:
-  id: "anthropic:claude-sonnet-4-20250514"
-  contextWindow: 200000
-  outputLimit: 16384
+  id: "${MODEL:-google:antigravity-gemini-3-flash}"
+  contextWindow: ${MODEL_CTX:-1000000}
+  outputLimit: ${MODEL_OUTPUT:-65536}
 path: "${TESTBED_PATH}"
-outputDir: "./out/chimera-phase1"
-baseUrl: "http://127.0.0.1:4096"
+outputDir: "${OUTPUT_DIR:-./out}"
+baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 1 from OPTI_SPEC.md: Quality Assurance & Bugfix

@@ -6,15 +6,15 @@
 # - LegacyLogger removed from all files
 # - All tests still pass
 
-runId: "phoenix-phase2"
-agent: "plan"
+runId: "phoenix-phase2-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+agent: "${AGENT:-plan}"
 model:
-  id: "anthropic:claude-sonnet-4-20250514"
-  contextWindow: 200000
-  outputLimit: 16384
+  id: "${MODEL:-google:antigravity-gemini-3-flash}"
+  contextWindow: ${MODEL_CTX:-1000000}
+  outputLimit: ${MODEL_OUTPUT:-65536}
 path: "${TESTBED_PATH}"
-outputDir: "./out/phoenix-phase2"
-baseUrl: "http://127.0.0.1:4096"
+outputDir: "${OUTPUT_DIR:-./out}"
+baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 2 from OPTI_SPEC.md: Logging Infrastructure Refactoring

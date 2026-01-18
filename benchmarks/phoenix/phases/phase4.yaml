@@ -8,15 +8,15 @@
 # - No internal details exposed to clients
 # - All tests pass
 
-runId: "phoenix-phase4"
-agent: "plan"
+runId: "phoenix-phase4-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+agent: "${AGENT:-plan}"
 model:
-  id: "anthropic:claude-sonnet-4-20250514"
-  contextWindow: 200000
-  outputLimit: 16384
+  id: "${MODEL:-google:antigravity-gemini-3-flash}"
+  contextWindow: ${MODEL_CTX:-1000000}
+  outputLimit: ${MODEL_OUTPUT:-65536}
 path: "${TESTBED_PATH}"
-outputDir: "./out/phoenix-phase4"
-baseUrl: "http://127.0.0.1:4096"
+outputDir: "${OUTPUT_DIR:-./out}"
+baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 4 from OPTI_SPEC.md: Input Validation & Error Handling
