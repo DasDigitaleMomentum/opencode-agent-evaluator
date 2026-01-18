@@ -44,10 +44,12 @@ interface SessionMetrics {
   totalReasoningTokens: number;
   totalCacheReadTokens: number;
   totalCacheWriteTokens: number;
+  totalTokens: number;
   totalCost: number;
   actualUsageTokens: number;
   contextWindow: number;
   outputLimit: number;
+  contextUsedTokens: number | null;
   contextAvailableTokens: number | null;
   toolCallCount: number;
   taskCallCount: number;
@@ -765,10 +767,12 @@ function buildSessionMetrics(
       totalReasoningTokens: summary.totalReasoningTokens,
       totalCacheReadTokens: summary.totalCacheReadTokens,
       totalCacheWriteTokens: summary.totalCacheWriteTokens,
+      totalTokens: summary.totalTokens,
       totalCost: summary.totalCost,
       actualUsageTokens: summary.actualUsageTokens,
       contextWindow: summary.contextWindow,
       outputLimit: summary.outputLimit,
+      contextUsedTokens: summary.contextUsedTokens,
       contextAvailableTokens: summary.contextAvailableTokens,
       toolCallCount: summary.toolCallCount,
       taskCallCount: summary.taskCallCount,

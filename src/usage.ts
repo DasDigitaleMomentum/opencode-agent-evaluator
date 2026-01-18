@@ -63,6 +63,8 @@ export interface UsageSummary {
   contextWindow: number;
   outputLimit: number;
   contextAvailableTokens: number | null;
+  contextUsedTokens: number | null;
+  totalTokens: number;
   toolCallCount: number;
   taskCallCount: number;
   subagentCount: number;
@@ -169,16 +171,23 @@ export function buildUsageSummary(
   const latestHasContextUsage = latestEntry?.hasContextUsage ?? false;
   const actualUsageTokens = state.actualUsageTokens;
   let contextAvailableTokens: number | null = null;
+  let contextUsedTokens: number | null = null;
   if (contextWindow > 0) {
     if (latestHasContextUsage && actualUsageTokens > 0) {
       contextAvailableTokens = Math.max(
         contextWindow - (actualUsageTokens + outputLimit),
         0,
       );
+      contextUsedTokens = actualUsageTokens + outputLimit;
     } else {
       contextAvailableTokens = contextWindow;
+      contextUsedTokens = 0;
     }
   }
+  const totalTokens =
+    state.totalInputTokens +
+    state.totalOutputTokens +
+    state.totalReasoningTokens;
   return {
     totalInputTokens: state.totalInputTokens,
     totalOutputTokens: state.totalOutputTokens,
@@ -190,6 +199,8 @@ export function buildUsageSummary(
     contextWindow,
     outputLimit,
     contextAvailableTokens,
+    contextUsedTokens,
+    totalTokens,
     toolCallCount: state.toolCallCount,
     taskCallCount: state.taskCallCount,
     subagentCount: state.subagentCount,
