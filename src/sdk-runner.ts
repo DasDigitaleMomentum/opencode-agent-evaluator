@@ -578,7 +578,8 @@ function extractToolCalls(infos: MessageInfoLike[]): ToolCallInfo[] {
 
 function extractToolArgumentsText(part: any): string {
   // Tool arguments are what the model generates (output tokens)
-  const args = part?.args ?? part?.arguments ?? part?.input ?? {};
+  // SDK v2 structure: part.state.input contains the tool arguments
+  const args = part?.state?.input ?? part?.args ?? part?.arguments ?? part?.input ?? {};
   if (typeof args === "string") return args;
   if (typeof args === "object") {
     try {
