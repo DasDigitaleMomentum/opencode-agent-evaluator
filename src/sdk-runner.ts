@@ -648,8 +648,10 @@ function formatLogEntryWithTools(
   if (toolCalls.length > 0) {
     lines.push("TOOL CALLS:");
     for (const tc of toolCalls) {
+      const inputTokens = estimateTokens(tc.argumentsText ?? "");
+      const outputTokens = estimateTokens(tc.outputText ?? "");
       lines.push(
-        `  - ${tc.name} (${tc.state})${tc.sessionID ? ` [session: ${tc.sessionID}]` : ""}`,
+        `  - ${tc.name} (${tc.state})${tc.sessionID ? ` [session: ${tc.sessionID}]` : ""} [tokens: in=${inputTokens}, out=${outputTokens}]`,
       );
     }
   }
