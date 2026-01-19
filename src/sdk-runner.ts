@@ -536,6 +536,25 @@ function extractSubagentSessionId(part: any): string | undefined {
   return undefined;
 }
 
+/**
+ * Serializes a tool state object to a string for logging.
+ * The SDK's part.state can be either a string or an object like:
+ * { status: "completed", input: {...}, output: "..." }
+ */
+function serializeToolState(state: unknown): string {
+  if (state === null || state === undefined) return "unknown";
+  if (typeof state === "string") return state;
+  if (typeof state === "object") {
+    // Serialize the full object to preserve all details (status, input, etc.)
+    try {
+      return JSON.stringify(state);
+    } catch {
+      return "unknown";
+    }
+  }
+  return String(state);
+}
+
 function extractToolCalls(infos: MessageInfoLike[]): ToolCallInfo[] {
   const toolCalls: ToolCallInfo[] = [];
   for (const info of infos) {
@@ -551,7 +570,7 @@ function extractToolCalls(infos: MessageInfoLike[]): ToolCallInfo[] {
         toolCalls.push({
           name: toolName,
           callID: part.callID ?? "",
-          state: part.state ?? "unknown",
+          state: serializeToolState(part.state),
           sessionID: part.sessionID,
           type,
           subagentSessionId:
