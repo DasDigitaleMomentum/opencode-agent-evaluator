@@ -6,7 +6,7 @@
 # - LegacyLogger removed from all files
 # - All tests still pass
 
-runId: "phoenix-phase2-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "phoenix-phase2-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-plan}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

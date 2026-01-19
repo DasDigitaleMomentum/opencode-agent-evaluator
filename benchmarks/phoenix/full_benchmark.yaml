@@ -5,7 +5,7 @@
 #   1. Create testbed: ./scripts/testbed.sh create phoenix-full -b phoenix/baseline
 #   2. Run: node dist/index.js -c benchmarks/phoenix/full_benchmark.yaml
 
-runId: "phoenix-full-${AGENT:-build}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "phoenix-full-${AGENT:-build}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-build}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

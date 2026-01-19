@@ -7,7 +7,7 @@
 # - Extensible design (Open-Closed Principle)
 # - All tests pass
 
-runId: "phoenix-phase3-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "phoenix-phase3-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-plan}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

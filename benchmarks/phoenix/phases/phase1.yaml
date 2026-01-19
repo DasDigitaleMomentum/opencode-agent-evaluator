@@ -5,7 +5,7 @@
 # - All 22 tests pass
 # - EUR calculations still work correctly
 
-runId: "phoenix-phase1-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "phoenix-phase1-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-plan}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

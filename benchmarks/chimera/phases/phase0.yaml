@@ -5,7 +5,7 @@
 # - Contains one line per source file
 # - Contains summary section
 
-runId: "chimera-phase0-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "chimera-phase0-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-plan}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

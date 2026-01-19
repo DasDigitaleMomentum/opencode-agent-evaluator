@@ -5,7 +5,7 @@
 #   1. Create testbed: ./scripts/testbed.sh create chimera-full -b chimera/baseline
 #   2. Run: node dist/index.js -c benchmarks/chimera/full_benchmark.yaml
 
-runId: "chimera-full-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}"
+runId: "chimera-full-${AGENT:-plan}-${MODEL:-google:antigravity-gemini-3-flash}${RUN_TAG:+-${RUN_TAG}}"
 agent: "${AGENT:-plan}"
 model:
   id: "${MODEL:-google:antigravity-gemini-3-flash}"

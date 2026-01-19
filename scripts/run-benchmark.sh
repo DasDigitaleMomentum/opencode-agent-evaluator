@@ -7,6 +7,7 @@
 #
 # Options:
 #   -p, --project <name>   Project to test: phoenix (default) or chimera
+#   -t, --tag <tag>        Tag to append to output directory (e.g. "with-plugin")
 #   -c, --continue         Continue with existing testbed (no reset)
 #   -r, --reset            Force reset testbed before running
 #   -n, --name <name>      Custom testbed name (default: {project}-test)
@@ -19,6 +20,7 @@
 #   ./scripts/run-benchmark.sh -c phase2           # Continue with phase 2
 #   ./scripts/run-benchmark.sh -r phase1           # Reset and run phase 1
 #   ./scripts/run-benchmark.sh -p chimera -c full  # Chimera full, continue
+#   ./scripts/run-benchmark.sh -t no-plugin phase1 # Tag output: phase1-no-plugin
 #
 
 set -euo pipefail
@@ -31,6 +33,7 @@ PROJECT="phoenix"
 TESTBED_NAME=""
 MODE="auto"  # auto, continue, reset
 PHASE="full"
+TAG=""
 
 # Model configuration
 AGENT="build"
@@ -48,6 +51,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -p|--project)
             PROJECT="$2"
+            shift 2
+            ;;
+        -t|--tag)
+            TAG="$2"
             shift 2
             ;;
         -c|--continue)
@@ -113,6 +120,9 @@ echo "Agent:   $AGENT"
 echo "Model:   $MODEL"
 echo "Testbed: $TESTBED_NAME"
 echo "Mode:    $MODE"
+if [[ -n "$TAG" ]]; then
+    echo "Tag:     $TAG"
+fi
 echo ""
 
 # Testbed management
@@ -177,11 +187,17 @@ export AGENT
 export MODEL
 export MODEL_CTX
 export MODEL_OUTPUT
+export RUN_TAG="$TAG"
 
 node dist/index.js -c "$CONFIG"
 
 # Show results location
 SAFE_MODEL="${MODEL//:/'-'}"
+if [[ -n "$TAG" ]]; then
+    RESULT_DIR="${PROJECT}-${PHASE}-${AGENT}-${SAFE_MODEL}-${TAG}"
+else
+    RESULT_DIR="${PROJECT}-${PHASE}-${AGENT}-${SAFE_MODEL}"
+fi
 echo ""
 echo "=== Done ==="
-echo "Results: out/${PROJECT}-${PHASE}-${AGENT}-${SAFE_MODEL}/metrics.yaml"
+echo "Results: out/${RESULT_DIR}/metrics.yaml"
