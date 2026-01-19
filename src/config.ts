@@ -45,12 +45,20 @@ export async function loadRunConfig(configPath: string, overrides: CliOverrides)
  *   ${VAR}          - replaced with env value, error if not set
  *   ${VAR:-default} - replaced with env value, or default if not set
  *   ${VAR:-}        - replaced with env value, or empty string if not set
+ *   ${VAR:+suffix}  - replaced with suffix if VAR is set, empty string if not
  */
 function expandEnvVariables(content: string): string {
-  // Pattern: ${VAR} or ${VAR:-default}
-  const pattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*)(?::-([^}]*))?\}/g
+  // First pass: handle ${VAR:+suffix} syntax (conditional suffix)
+  const plusPattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*):\+([^}]*)\}/g
+  content = content.replace(plusPattern, (_match, varName: string, suffix: string) => {
+    const value = process.env[varName]
+    return value !== undefined && value !== "" ? suffix : ""
+  })
+
+  // Second pass: handle ${VAR} and ${VAR:-default} syntax
+  const defaultPattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*)(?::-([^}]*))?\}/g
   
-  return content.replace(pattern, (match, varName: string, defaultValue?: string) => {
+  return content.replace(defaultPattern, (match, varName: string, defaultValue?: string) => {
     const value = process.env[varName]
     
     if (value !== undefined) {

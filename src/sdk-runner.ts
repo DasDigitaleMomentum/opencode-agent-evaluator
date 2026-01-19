@@ -185,23 +185,15 @@ export async function runEvaluation(
       usageBySession.set(info.sessionID, usageState);
     }
 
-    // Estimate tool tokens from message parts
-    for (const info of allMessages) {
-      const sessionId = (info as any).sessionID ?? leadSessionId;
-      const usageState =
-        usageBySession.get(sessionId) ?? createEmptyUsageState();
-      const toolTokens = extractToolTokenEstimates(info);
-      usageState.estimatedToolOutputTokens += toolTokens.outputTokens;
-      usageState.estimatedToolInputTokens += toolTokens.inputTokens;
-      usageBySession.set(sessionId, usageState);
-    }
-
-    // Count tool calls per session (subagent registration already done above)
+    // Count tool calls and accumulate tool token estimates per session
     for (const toolCall of toolCalls) {
       const sessionId = toolCall.sessionID ?? session.id;
       const usageState =
         usageBySession.get(sessionId) ?? createEmptyUsageState();
       usageState.toolCallCount += 1;
+      // Accumulate tool token estimates from extracted tool calls
+      usageState.estimatedToolOutputTokens += estimateTokens(toolCall.argumentsText ?? "");
+      usageState.estimatedToolInputTokens += estimateTokens(toolCall.outputText ?? "");
       if (toolCall.type === "task") {
         usageState.taskCallCount += 1;
       }
