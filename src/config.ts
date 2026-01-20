@@ -46,31 +46,111 @@ export async function loadRunConfig(configPath: string, overrides: CliOverrides)
  *   ${VAR:-default} - replaced with env value, or default if not set
  *   ${VAR:-}        - replaced with env value, or empty string if not set
  *   ${VAR:+suffix}  - replaced with suffix if VAR is set, empty string if not
+ *                     (suffix can contain nested ${} expressions)
  */
 function expandEnvVariables(content: string): string {
-  // First pass: handle ${VAR:+suffix} syntax (conditional suffix)
-  const plusPattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*):\+([^}]*)\}/g
-  content = content.replace(plusPattern, (_match, varName: string, suffix: string) => {
-    const value = process.env[varName]
-    return value !== undefined && value !== "" ? suffix : ""
-  })
+  // First pass: handle ${VAR:+suffix} syntax with proper brace matching
+  content = expandConditionalSuffix(content)
 
   // Second pass: handle ${VAR} and ${VAR:-default} syntax
   const defaultPattern = /\$\{([a-zA-Z_][a-zA-Z0-9_]*)(?::-([^}]*))?\}/g
-  
+
   return content.replace(defaultPattern, (match, varName: string, defaultValue?: string) => {
     const value = process.env[varName]
-    
+
     if (value !== undefined) {
       return value
     }
-    
+
     if (defaultValue !== undefined) {
       return defaultValue
     }
-    
+
     throw new Error(`Environment variable ${varName} is not set and has no default value`)
   })
+}
+
+/**
+ * Expands ${VAR:+suffix} patterns where suffix can contain nested ${} expressions.
+ * Uses manual parsing to properly match braces.
+ */
+function expandConditionalSuffix(content: string): string {
+  const marker = "${"
+  let result = ""
+  let i = 0
+
+  while (i < content.length) {
+    const markerPos = content.indexOf(marker, i)
+    if (markerPos === -1) {
+      result += content.slice(i)
+      break
+    }
+
+    // Add content before the marker
+    result += content.slice(i, markerPos)
+
+    // Try to parse ${VAR:+suffix} pattern
+    const parsed = parseConditionalSuffix(content, markerPos)
+    if (parsed) {
+      const value = process.env[parsed.varName]
+      if (value !== undefined && value !== "") {
+        // Variable is set - recursively expand the suffix
+        result += expandEnvVariables(parsed.suffix)
+      }
+      // If variable not set, add nothing (empty string)
+      i = parsed.endPos
+    } else {
+      // Not a :+ pattern, just add the marker and continue
+      result += marker
+      i = markerPos + marker.length
+    }
+  }
+
+  return result
+}
+
+/**
+ * Parses a ${VAR:+suffix} pattern starting at pos, handling nested braces.
+ * Returns null if not a :+ pattern.
+ */
+function parseConditionalSuffix(content: string, pos: number): { varName: string; suffix: string; endPos: number } | null {
+  // Must start with ${
+  if (content.slice(pos, pos + 2) !== "${") return null
+
+  // Find the variable name
+  let i = pos + 2
+  const varNameStart = i
+  while (i < content.length && /[a-zA-Z0-9_]/.test(content[i])) {
+    i++
+  }
+  const varName = content.slice(varNameStart, i)
+  if (!varName || !/^[a-zA-Z_]/.test(varName)) return null
+
+  // Check for :+ operator
+  if (content.slice(i, i + 2) !== ":+") return null
+  i += 2
+
+  // Parse the suffix, counting braces to find the matching }
+  const suffixStart = i
+  let braceDepth = 1
+
+  while (i < content.length && braceDepth > 0) {
+    if (content.slice(i, i + 2) === "${") {
+      braceDepth++
+      i += 2
+    } else if (content[i] === "}") {
+      braceDepth--
+      if (braceDepth === 0) break
+      i++
+    } else {
+      i++
+    }
+  }
+
+  if (braceDepth !== 0) return null // Unbalanced braces
+
+  const suffix = content.slice(suffixStart, i)
+  return { varName, suffix, endPos: i + 1 } // +1 to skip the closing }
 }
 
 function parseRunConfig(raw: Record<string, unknown>): RunConfig {

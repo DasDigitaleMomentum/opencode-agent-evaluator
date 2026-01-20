@@ -103,6 +103,25 @@ export function estimateTokens(text: string): number {
 export function extractUsageEntry(info: MessageInfoLike): UsageEntry | null {
   if (!info || info.role !== "assistant") return null;
   if (typeof info.id !== "string" || info.id.length === 0) return null;
+
+  // DEBUG: Log the full message info structure to understand token reporting
+  const infoAny = info as any;
+  const debugTokenInfo = {
+    id: info.id,
+    hasTokens: !!info.tokens,
+    tokens: info.tokens,
+    // Check for alternative token field names that might contain reasoning
+    thinking: infoAny.thinking,
+    thinkingTokens: infoAny.thinkingTokens,
+    thinking_tokens: infoAny.thinking_tokens,
+    reasoningContent: infoAny.reasoningContent,
+    reasoning_tokens: infoAny.reasoning_tokens,
+    extended_thinking: infoAny.extended_thinking,
+    // Check if tokens has alternative structure
+    tokensKeys: info.tokens ? Object.keys(info.tokens) : [],
+  };
+  console.log(`[DEBUG:TOKENS] Message ${info.id?.slice(0, 20)}:`, JSON.stringify(debugTokenInfo));
+
   const tokens = info.tokens;
   if (!tokens) return null;
   const inputTokens = tokens.input ?? 0;
@@ -110,6 +129,12 @@ export function extractUsageEntry(info: MessageInfoLike): UsageEntry | null {
   const reasoningTokens = tokens.reasoning ?? 0;
   const cacheReadTokens = tokens.cache?.read ?? 0;
   const cacheWriteTokens = tokens.cache?.write ?? 0;
+
+  // DEBUG: Log extracted values
+  if (inputTokens > 0 || outputTokens > 0) {
+    console.log(`[DEBUG:TOKENS] Extracted: in=${inputTokens}, out=${outputTokens}, reasoning=${reasoningTokens}, cacheR=${cacheReadTokens}, cacheW=${cacheWriteTokens}`);
+  }
+
   if (
     inputTokens === 0 &&
     outputTokens === 0 &&
@@ -122,10 +147,10 @@ export function extractUsageEntry(info: MessageInfoLike): UsageEntry | null {
   const combinedTokens = info.summary
     ? outputTokens
     : inputTokens +
-      outputTokens +
-      reasoningTokens +
-      cacheReadTokens +
-      cacheWriteTokens;
+    outputTokens +
+    reasoningTokens +
+    cacheReadTokens +
+    cacheWriteTokens;
   return {
     messageId: info.id,
     input: inputTokens,

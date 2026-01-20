@@ -12,7 +12,7 @@ This system handles order processing, stock management, and tax calculation.
 Run tests via `pytest tests/`.
 
 ## Execution & Demo
-Um das System im Live-Modus zu testen, ohne die Test-Suite zu nutzen, kann die API-Simulation gestartet werden:
+To test the system in live mode without the test suite:
 
 ```bash
 python run_demo.py

@@ -17,9 +17,9 @@ baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 0 from OPTI_SPEC.md: Project Exploration
-    
+
     Create docs/overview.md containing:
     1. One line per source file with a brief description
     2. A summary section describing the main project functionality
-    
+
     This document will serve as reference for subsequent phases.

@@ -17,7 +17,7 @@ baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 1 from OPTI_SPEC.md: Quality Assurance & Bugfix
-    
+
     1. Locate the root cause of the failing test in tests/test_orders.py
     2. Fix the rounding error in international order calculations
     3. Ensure domestic EUR orders still calculate correctly

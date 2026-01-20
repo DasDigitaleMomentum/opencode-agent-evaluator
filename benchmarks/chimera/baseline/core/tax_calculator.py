@@ -5,10 +5,10 @@ logger = get_logger("TaxCalculator")
 def calculate_total(base_price, tax_rate, currency="EUR"):
     logger.log_event("info", f"Calculating tax for {base_price} {currency}")
     
-    # BUG: Bei US-Dollar wird fälschlicherweise ein fixer Abschlag abgezogen, 
-    # der die Rundung bei internationalen Bestellungen ruiniert.
+    # BUG: For US-Dollar, a fixed deduction is incorrectly applied, 
+    # which ruins the rounding for international orders.
     if currency == "USD":
-        # Fehlerhafte Logik: Verrechnungssatz wird falsch subtrahiert statt addiert
+        # Faulty logic: rate is incorrectly subtracted instead of added
         adjusted_price = base_price - (base_price * 0.05) 
     else:
         adjusted_price = base_price

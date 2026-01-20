@@ -6,7 +6,7 @@ from gateway.rest_api import post_order
 def run_sample_flow():
     print("--- Starting Chimera Demo Flow ---")
 
-    # Beispiel-Daten für eine Bestellung
+    # Sample data for an order
     token = "secret-api-token"
     order_payload = {
         "item_id": "A100",

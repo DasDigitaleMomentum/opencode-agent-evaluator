@@ -164,8 +164,11 @@ export async function runEvaluation(
       const tcSessionId = toolCall.sessionID ?? leadSessionId;
       const tcSessionInfo = sessionInfoMap.get(tcSessionId);
       const tcLabel = tcSessionInfo?.label ?? "LEAD";
+      const tcInputTokens = estimateTokens(toolCall.argumentsText ?? "");
+      const tcOutputTokens = estimateTokens(toolCall.outputText ?? "");
+      const tcStateShort = truncateWithEllipsis(toolCall.state || "running", 60);
       console.log(
-        formatCliLine(tcLabel, `TOOL: ${toolCall.name}`, toolCall.state || "running"),
+        formatCliLine(tcLabel, `TOOL: ${toolCall.name} [in=${tcInputTokens}, out=${tcOutputTokens}]`, tcStateShort),
       );
     }
 
@@ -261,19 +264,110 @@ async function sendPrompt(
   prompt: string,
   config: RunConfig,
 ): Promise<unknown> {
-  if (!client?.session?.prompt) {
-    throw new Error("OpenCode SDK client missing session.prompt");
+  if (!client?.session?.promptAsync) {
+    throw new Error("OpenCode SDK client missing session.promptAsync");
   }
-  return client.session.prompt({
+  if (!client?.session?.status) {
+    throw new Error("OpenCode SDK client missing session.status");
+  }
+
+  const agentValue = parseAgentConfig(config.agent);
+  const requestPayload = {
     sessionID: sessionId,
     directory: config.path,
-    agent: config.agent,
+    agent: agentValue,
     model: {
       providerID: config.model.providerId,
       modelID: config.model.modelId,
     },
     parts: [{ type: "text", text: prompt }],
-  });
+  };
+
+  // Debug: Log what we're sending to the server
+  console.log(`[DEBUG] Sending prompt to OpenCode (async):`);
+  console.log(`        Agent: ${JSON.stringify(agentValue)}`);
+  console.log(`        Model: ${config.model.providerId}:${config.model.modelId}`);
+
+  // Send prompt asynchronously (returns immediately)
+  await client.session.promptAsync(requestPayload);
+
+  // Poll for session to become idle
+  const pollIntervalMs = 2000;
+  const maxWaitMs = 30 * 60 * 1000; // 30 minutes max
+  const startTime = Date.now();
+  let lastStatus = "busy";
+  let lastLogTime = 0;
+
+  console.log(`[DEBUG] Waiting for session to complete...`);
+
+  while (Date.now() - startTime < maxWaitMs) {
+    await sleep(pollIntervalMs);
+
+    try {
+      const statusResponse = await client.session.status({
+        directory: config.path,
+      });
+
+      const elapsedSec = Math.round((Date.now() - startTime) / 1000);
+      const shouldLog = lastLogTime === 0 || elapsedSec - lastLogTime >= 30;
+
+      if (shouldLog) {
+        const statusStr = JSON.stringify(statusResponse).slice(0, 200);
+        console.log(`[DEBUG] ${elapsedSec}s - ${statusStr}`);
+        lastLogTime = elapsedSec;
+      }
+
+      // statusResponse is a map of sessionId -> status
+      const sessionStatus = statusResponse?.[sessionId];
+      if (sessionStatus) {
+        const statusType = sessionStatus.type ?? "unknown";
+        if (statusType !== lastStatus) {
+          console.log(`[DEBUG] Session status: ${statusType}`);
+          lastStatus = statusType;
+        }
+
+        if (statusType === "idle") {
+          console.log(`[DEBUG] Session completed in ${elapsedSec}s`);
+          break;
+        }
+      } else {
+        // Session not found in status - might already be idle
+        const allSessionIds = Object.keys(statusResponse || {});
+        if (allSessionIds.length === 0) {
+          console.log(`[DEBUG] No active sessions found - assuming idle`);
+          lastStatus = "idle";
+          break;
+        }
+      }
+    } catch (statusError) {
+      console.log(`[DEBUG] Status check failed: ${statusError}`);
+    }
+  }
+
+  if (lastStatus !== "idle") {
+    throw new Error(`Session did not complete within ${maxWaitMs / 60000} minutes`);
+  }
+
+  // Fetch the messages that were generated
+  const messages = await fetchSessionMessages(client, sessionId);
+  return messages;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseAgentConfig(agent: string): string | unknown {
+  const trimmed = agent.trim();
+  if (trimmed.startsWith("{")) {
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      // If parsing fails, treat as simple string name
+      return agent;
+    }
+  }
+  return agent;
 }
 
 function extractMessageInfos(response: unknown): MessageInfoLike[] {
@@ -304,6 +398,13 @@ function extractMessageInfos(response: unknown): MessageInfoLike[] {
     if (typeof record.id === "string") {
       return [record as MessageInfoLike];
     }
+    // Debug: show what keys are present
+    const keys = Object.keys(record);
+    if (keys.length === 0) {
+      throw new Error("Opencode server returned empty response object. This often indicates invalid parameters (e.g. agent configuration).");
+    }
+    console.error("Debug: response keys:", keys);
+    console.error("Debug: response sample:", JSON.stringify(response).slice(0, 500));
   }
   throw new Error("Unsupported prompt response shape");
 }
@@ -669,8 +770,9 @@ function formatLogEntryWithTools(
     for (const tc of toolCalls) {
       const inputTokens = estimateTokens(tc.argumentsText ?? "");
       const outputTokens = estimateTokens(tc.outputText ?? "");
+      const stateShort = truncateWithEllipsis(tc.state || "done", 80);
       lines.push(
-        `  - ${tc.name} (${tc.state})${tc.sessionID ? ` [session: ${tc.sessionID}]` : ""} [tokens: in=${inputTokens}, out=${outputTokens}]`,
+        `  - ${tc.name} [tokens: in=${inputTokens}, out=${outputTokens}]${tc.sessionID ? ` [session: ${tc.sessionID}]` : ""} ${stateShort}`,
       );
     }
   }
@@ -712,9 +814,9 @@ function renderUsageSummary(
 
     const label = sessionInfo.label.padEnd(8);
     const agent = `[${sessionInfo.agent}]`.padEnd(10);
-    
+
     const toolTokens = summary.estimatedToolOutputTokens + summary.estimatedToolInputTokens;
-    
+
     const line1 = [
       `${label} ${agent}`,
       `in: ${formatTokenValue(summary.totalInputTokens).padStart(8)}`,
@@ -731,7 +833,7 @@ function renderUsageSummary(
       summary.contextUsedTokens === null
         ? "n/a"
         : formatTokenValue(summary.contextUsedTokens);
-    
+
     const line2 = [
       `         cache: ${formatTokenValue(summary.totalCacheReadTokens)}/${formatTokenValue(summary.totalCacheWriteTokens)}`,
       `tools: ${summary.toolCallCount}`,

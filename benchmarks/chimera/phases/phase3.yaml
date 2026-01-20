@@ -19,7 +19,7 @@ baseUrl: "${OPENCODE_URL:-http://127.0.0.1:4096}"
 prompts:
   - |
     Execute Phase 3 from OPTI_SPEC.md: Implementation of Reporting Interface
-    
+
     1. Create core/hooks.py with OrderHook base class interface
     2. Implement AnalyticsHook that writes order data (ID, amount, status) to analytics_events.json
     3. Integrate the hook system into OrderManager - hooks trigger on successful order creation
