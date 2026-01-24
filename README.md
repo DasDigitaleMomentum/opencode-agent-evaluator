@@ -1,58 +1,45 @@
 # OpenCode Agent Evaluator
 
-A simple CLI tool to benchmark OpenCode AI agent runs. I built this to compare different agent setups and see where tokens actually go.
+A CLI tool to benchmark AI coding agents running on [OpenCode](https://github.com/opencode-ai/opencode). Compare different agent configurations and track where tokens actually go.
 
-## What it does
+## Features
 
-- Sends prompts to an OpenCode server and tracks everything
-- Shows token usage per session (input, output, reasoning, cache)
-- Labels sessions as LEAD, SUB #1, SUB #2 etc. so you can follow the flow
-- Estimates how many tokens go into tool calls vs. actual reasoning
-- Outputs structured YAML metrics for further analysis
-
-## Why?
-
-I wanted to understand how efficient different sub-agent scenarios are. A setup that burns most tokens on tool calls is usually not great. This tool helps spot that.
+- **Token tracking**: Input, output, reasoning, and cache tokens per session
+- **Session labeling**: LEAD, SUB #1, SUB #2 etc. to follow agent hierarchy
+- **Tool call analysis**: Estimates tokens consumed by tool calls vs reasoning
+- **Structured output**: YAML metrics for programmatic analysis
+- **Analysis script**: Aggregate and compare multiple benchmark runs
 
 ## Prerequisites
 
 - Node.js 18+
-- A running OpenCode TUI instance (the evaluator connects to its built-in web server)
+- A running [OpenCode](https://github.com/opencode-ai/opencode) TUI instance
 
-## Setup
+## Quick Start
 
 ```bash
+# Install dependencies
 npm install
 npm run build
+
+# Start OpenCode TUI in your target project
+cd /path/to/your/project && opencode
+
+# Run the evaluator (in another terminal)
+node dist/index.js -c config.yaml
 ```
 
-## Usage
+## Configuration
 
-1. **Start OpenCode TUI** in your target project directory:
-   ```bash
-   cd /path/to/your/project
-   opencode
-   ```
-   This starts the TUI with a built-in web server on port 4096.
-
-   > **Important:** Do NOT use `opencode serve` - the evaluator requires the full TUI web server, not the headless API server. The headless server has a different response format that is incompatible with this tool.
-
-2. Create a `config.yaml` (see example below)
-
-3. Run the evaluator:
-   ```bash
-   node dist/index.js -c config.yaml
-   ```
-
-## Config
+Copy `config.example.yaml` to `config.yaml`:
 
 ```yaml
 runId: "my-test-run"
-agent: "plan"
+agent: "build"
 model:
-  id: "google:gemini-2.5-flash"
-  contextWindow: 1000000
-  outputLimit: 65536
+  id: "openai:gpt-4o"
+  contextWindow: 128000
+  outputLimit: 4096
 path: "/path/to/your/project"
 outputDir: "./out"
 baseUrl: "http://127.0.0.1:4096"
@@ -60,37 +47,113 @@ prompts:
   - "Your prompt here"
 ```
 
+> **Important:** The evaluator connects to OpenCode's TUI web server (port 4096). Do NOT use `opencode serve` – it has an incompatible response format.
+
 ## Output
 
-Results go into `out/{runId}/`:
-- `metrics.yaml` - structured token usage per session
-- `log.txt` - full conversation log
+Results are saved to `out/{runId}/`:
+- `metrics.yaml` – structured token usage per session
+- `log.txt` – full conversation log
 
-## Benchmarks
+## Benchmark Results
+
+Results from running the Phoenix benchmark with different agents and models (latest run: January 23, 2026):
+
+![Benchmark Results](benchmark.png)
+
+**Columns:**
+- **Total**: All tokens (input + output + reasoning + cache)
+- **Computed**: Billable tokens (input + output + reasoning)
+- **Cache**: Cache read tokens
+- **Lead Ctx**: Context window usage by lead agent
+- **Tools (L/S)**: Tool calls by Lead / Subagents
+- **Subs**: Number of subagent sessions
+
+**Agents:**
+- **Sisyphus**: Running with oh-my-opencode
+- **build**: Standard build agent from OpenCode
+- **delegator**: Proof-of-concept delegator agent (plugin not yet published)
+
+**Prompt Variants:**
+- **codex modded**: Optimized codex prompt with subagent-encouragement
+- **codex**: The new standard codex prompt (since early 2026)
+- **dcp**: DCP Plugin enabled
+
+**Interpretations:**
+- **oh-my-opencode**: Doesn't spawn subagents, but seems generous (af) with tokens based on its prompt design.
+- **dcp**: Brings value to Opus and Gemini Flash – lowers context and cache usage as expected. However, for Opus it increases computed tokens, which could drain your token budget or increase costs on API.
+- **codex**: The new codex prompt is remarkably efficient. DCP reduces quality here – expected, since the Responses API already optimizes in the background.
+
+## Analyzing Results
+
+Use the analysis script to aggregate metrics from multiple runs:
+
+```bash
+npx tsx scripts/analyze-runs.ts ./out
+```
+
+Output example:
+
+| Run Tag | Total | Computed (in+out+rsn) | Cache | Lead Ctx | Tools (L/S) | Subs | Duration |
+|---------|-------|-----------------------|-------|----------|-------------|------|----------|
+| build / gpt-5.2-codex | 817.0K | 78.4K | 738.6K | 103.2K | 48/0 | 0 | 6m 42s |
+| build / gemini-3-flash | 2.33M | 325.6K | 2.00M | 118.2K | 65/0 | 0 | 3m 52s |
+
+**Legend:**
+- **Total**: All tokens (input + output + reasoning + cache)
+- **Computed**: Billable tokens (input + output + reasoning)
+- **Cache**: Cache read tokens
+- **Lead Ctx**: Context window usage by lead agent
+- **Tools (L/S)**: Tool calls by Lead / Subagents
+- **Subs**: Number of subagent sessions
+
+---
+
+## Included Benchmarks
 
 This repository includes two benchmark projects for evaluating AI coding agents:
 
-### Available Benchmarks
+| Project | Phases | Description |
+|---------|--------|-------------|
+| **Chimera** | 0–3 | Order processing backend – Exploration, Bugfix, Logging, Hooks |
+| **Phoenix** | 0–4 | Based on Chimera but more complex – adds Input Validation phase |
 
-| Project   | Phases | Description                                      |
-| --------- | ------ | ------------------------------------------------ |
-| **Chimera** | 0-3    | Order processing backend (DE) - Bugfix, Logging, Hooks |
-| **Phoenix** | 0-4    | Order processing backend (EN) - adds Input Validation  |
+Both projects follow the same concept: a realistic backend codebase with incremental improvement tasks. Phoenix is derived from the same test data as Chimera but presents a more challenging benchmark with additional complexity, less hints and more code.
+Remark: Both projects are not real, they are generated by Gemini. For more realistic benchmarks, things like UI code is missing.
 
 ### Running a Benchmark
 
-```bash
-# 1. Create a testbed from a baseline project
-./scripts/testbed.sh create my-test -b chimera/baseline
+The easiest way is using the `run-benchmark.sh` script:
 
-# 2. Start OpenCode TUI in the testbed directory
+```bash
+# Run Phoenix full benchmark with default model
+./scripts/run-benchmark.sh
+
+# Run specific phase with custom agent/model
+./scripts/run-benchmark.sh -a coder -m openai:gpt-4o phase1
+
+# Run Chimera benchmark
+./scripts/run-benchmark.sh -p chimera
+
+# Continue existing testbed (no reset)
+./scripts/run-benchmark.sh -c phase2
+
+# Tag the run for comparison
+./scripts/run-benchmark.sh -t with-plugin phase1
+```
+
+### Manual Benchmark Execution
+
+```bash
+# 1. Create testbed from baseline
+./scripts/testbed.sh create my-test -b phoenix/baseline
+
+# 2. Start OpenCode TUI in testbed
 cd testbeds/my-test && opencode
 
-# 3. Run the full benchmark (in another terminal)
-TESTBED_PATH=$(pwd)/testbeds/my-test node dist/index.js -c benchmarks/chimera/full_benchmark.yaml
-
-# Or run individual phases:
-node dist/index.js -c benchmarks/chimera/phases/phase1.yaml
+# 3. Run benchmark (in another terminal)
+TESTBED_PATH=$(pwd)/testbeds/my-test \
+  node dist/index.js -c benchmarks/phoenix/full_benchmark.yaml
 ```
 
 ### Testbed Management
@@ -105,27 +168,26 @@ node dist/index.js -c benchmarks/chimera/phases/phase1.yaml
 ./scripts/testbed.sh baselines                    # List available baselines
 ```
 
-### Benchmark Structure
+### Project Structure
 
 ```
-benchmarks/
-├── chimera/
-│   ├── baseline/           # Project source (OPTI_SPEC.md included)
-│   ├── full_benchmark.yaml # Run all phases
-│   └── phases/
-│       ├── phase0.yaml     # Project exploration
-│       ├── phase1.yaml     # Bugfix
-│       ├── phase2.yaml     # Logging refactoring
-│       └── phase3.yaml     # Hook system
-└── phoenix/
-    ├── baseline/
-    ├── full_benchmark.yaml
-    └── phases/
-        ├── phase0.yaml
-        ├── phase1.yaml
-        ├── phase2.yaml
-        ├── phase3.yaml
-        └── phase4.yaml     # Input validation
+.
+├── src/                    # Evaluator source code
+├── scripts/
+│   ├── analyze-runs.ts     # Aggregate metrics from multiple runs
+│   ├── run-benchmark.sh    # Convenience script for benchmarks
+│   └── testbed.sh          # Testbed management
+├── benchmarks/
+│   ├── phoenix/
+│   │   ├── baseline/       # Project source with OPTI_SPEC.md
+│   │   ├── full_benchmark.yaml
+│   │   └── phases/         # phase0.yaml through phase4.yaml
+│   └── chimera/
+│       ├── baseline/
+│       ├── full_benchmark.yaml
+│       └── phases/
+├── config.example.yaml     # Example configuration
+└── out/                    # Output directory (git-ignored)
 ```
 
 ## License
