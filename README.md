@@ -2,6 +2,8 @@
 
 A CLI tool to benchmark AI coding agents running on [OpenCode](https://github.com/opencode-ai/opencode). Compare different agent configurations and track where tokens actually go.
 
+## REMARK: This is NOT build by or affiliated with the OpenCode Team ("anomalyco")
+
 ## Features
 
 - **Token tracking**: Input, output, reasoning, and cache tokens per session
@@ -192,4 +194,4 @@ TESTBED_PATH=$(pwd)/testbeds/my-test \
 
 ## License
 
-MIT
+MIT - © 2026 DDM – Das Digitale Momentum GmbH & Co KG
