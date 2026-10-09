@@ -195,3 +195,7 @@ TESTBED_PATH=$(pwd)/testbeds/my-test \
 ## License
 
 MIT - © 2026 DDM – Das Digitale Momentum GmbH & Co KG
+
+---
+
+Maintained by [Das Digitale Momentum](https://www.das-digitale-momentum.de/en/open-source/#opencode-agent-evaluator) · Much, Germany · [All our open source projects](https://github.com/DasDigitaleMomentum)
