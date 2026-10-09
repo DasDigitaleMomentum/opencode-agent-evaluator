@@ -2,6 +2,18 @@
   "name": "agent-evaluator",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DasDigitaleMomentum/opencode-agent-evaluator.git"
+  },
+  "homepage": "https://www.das-digitale-momentum.de/en/open-source/#opencode-agent-evaluator",
+  "bugs": {
+    "url": "https://github.com/DasDigitaleMomentum/opencode-agent-evaluator/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "bin": {
     "agent-evaluator": "dist/index.js"
