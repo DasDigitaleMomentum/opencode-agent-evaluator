@@ -24,7 +24,7 @@
     "test": "node dist/index.js --help"
   },
   "dependencies": {
-    "@opencode-ai/sdk": "^1.1.25",
+    "@opencode-ai/sdk": "^1.18.34",
     "commander": "12.1.0",
     "js-yaml": "4.1.0"
   },
