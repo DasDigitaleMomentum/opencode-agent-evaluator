@@ -1,0 +1,44 @@
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.ts]
+indent_style = space
+indent_size = 2
+
+# scripts/*.ts uses 4-space indentation.
+[scripts/*.ts]
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.sh]
+indent_style = space
+indent_size = 4
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+# These files contain whitespace-only lines; do not rewrite them on save.
+[{src/logger.ts,scripts/analyze-runs.ts,scripts/testbed.sh}]
+trim_trailing_whitespace = false
+
+# Benchmark baselines are fixtures handed to the agents under test and must
+# stay byte-identical. Several files lack a final newline or contain trailing
+# whitespace, so editors must not normalise them.
+[benchmarks/**]
+insert_final_newline = unset
+trim_trailing_whitespace = unset
